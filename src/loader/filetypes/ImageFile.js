@@ -10,6 +10,7 @@ var File = require('../File');
 var FileTypesManager = require('../FileTypesManager');
 var GetFastValue = require('../../utils/object/GetFastValue');
 var IsPlainObject = require('../../utils/object/IsPlainObject');
+const { frame } = require('../../gameobjects/components/Crop');
 
 /**
  * @classdesc
@@ -52,6 +53,11 @@ var ImageFile = new Class({
             xhrSettings = GetFastValue(config, 'xhrSettings');
             extension = GetFastValue(config, 'extension', extension);
             frameConfig = GetFastValue(config, 'frameConfig');
+        }
+        
+        if(frameConfig && frameConfig.format === "ktx")//limit for ktx
+        {
+            extension = frameConfig.format;
         }
 
         if (Array.isArray(url))
@@ -97,27 +103,32 @@ var ImageFile = new Class({
     {
         this.state = CONST.FILE_PROCESSING;
 
-        this.data = new Image();
-
-        this.data.crossOrigin = this.crossOrigin;
-
         var _this = this;
+        if(this.config.format != "ktx"){
+            this.data = new Image();
 
-        this.data.onload = function ()
-        {
-            File.revokeObjectURL(_this.data);
+            this.data.crossOrigin = this.crossOrigin;
 
+
+            this.data.onload = function ()
+            {
+                File.revokeObjectURL(_this.data);
+
+                _this.onProcessComplete();
+            };
+
+            this.data.onerror = function ()
+            {
+                File.revokeObjectURL(_this.data);
+
+                _this.onProcessError();
+            };
+            File.createObjectURL(this.data, this.xhrLoader.response, 'image/png');
+        }
+        else{            
+            this.data = this.xhrLoader.response;
             _this.onProcessComplete();
-        };
-
-        this.data.onerror = function ()
-        {
-            File.revokeObjectURL(_this.data);
-
-            _this.onProcessError();
-        };
-
-        File.createObjectURL(this.data, this.xhrLoader.response, 'image/png');
+        }
     },
 
     /**
@@ -148,7 +159,10 @@ var ImageFile = new Class({
         }
         else if (!linkFile)
         {
-            texture = this.cache.addImage(this.key, this.data);
+            if(this.config.format == "ktx"){
+                texture = this.cache.addImageExt(this.key, this.data, this.config.format);
+            }else
+                texture = this.cache.addImage(this.key, this.data);
 
             this.pendingDestroy(texture);
         }
@@ -260,6 +274,25 @@ FileTypesManager.register('image', function (key, url, xhrSettings)
     else
     {
         this.addFile(new ImageFile(this, key, url, xhrSettings));
+    }
+
+    return this;
+});
+
+//Extension image
+FileTypesManager.register('imageExt', function (key, url, xhrSettings)
+{
+    if (Array.isArray(key))
+    {
+        for (var i = 0; i < key.length; i++)
+        {
+            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
+            this.addFile(new ImageFile(this, key[i], url, xhrSettings,{format:"ktx"}));
+        }
+    }
+    else
+    {
+        this.addFile(new ImageFile(this, key, url, xhrSettings,{format:"ktx"}));
     }
 
     return this;

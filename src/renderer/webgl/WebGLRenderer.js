@@ -377,7 +377,8 @@ var WebGLRenderer = new Class({
         this.compression = {
             ETC1: false,
             PVRTC: false,
-            S3TC: false
+            S3TC: false,
+            ASTC: false
         };
 
         /**
@@ -688,6 +689,18 @@ var WebGLRenderer = new Class({
         this.compression.ETC1 = gl.getExtension(extString + 'etc1') || gl.getExtension(wkExtString + 'etc1');
         this.compression.PVRTC = gl.getExtension(extString + 'pvrtc') || gl.getExtension(wkExtString + 'pvrtc');
         this.compression.S3TC = gl.getExtension(extString + 's3tc') || gl.getExtension(wkExtString + 's3tc');
+        this.compression.ASTC = gl.getExtension(extString + 'astc') || gl.getExtension(wkExtString + 'astc');
+
+        this.compressionArray = {};
+        Object.keys(this.compression).forEach(format=>{
+            if(this.compression[format]){
+                Object.keys(this.compression[format].__proto__).forEach(key =>{
+                    this.compressionArray[this.compression[format][key]] = key;
+                });
+            }
+        })
+
+        console.log(this.compressionArray);
 
         this.supportedExtensions = exts;
 
@@ -1478,7 +1491,7 @@ var WebGLRenderer = new Class({
      *
      * @return {?WebGLTexture} The WebGL Texture that was created, or `null` if it couldn't be created.
      */
-    createTextureFromSource: function (source, width, height, scaleMode)
+    createTextureFromSource: function (source, width, height, scaleMode,format)
     {
         var gl = this.gl;
         var minFilter = gl.NEAREST;
@@ -1504,11 +1517,11 @@ var WebGLRenderer = new Class({
 
         if (!source && typeof width === 'number' && typeof height === 'number')
         {
-            texture = this.createTexture2D(0, minFilter, magFilter, wrap, wrap, gl.RGBA, null, width, height);
+            texture = this.createTexture2D(0, minFilter, magFilter, wrap, wrap, format?format:gl.RGBA, null, width, height);
         }
         else
         {
-            texture = this.createTexture2D(0, minFilter, magFilter, wrap, wrap, gl.RGBA, source);
+            texture = this.createTexture2D(0, minFilter, magFilter, wrap, wrap, format?format:gl.RGBA, source,width,height);
         }
 
         return texture;
@@ -1556,7 +1569,13 @@ var WebGLRenderer = new Class({
 
         if (pixels === null || pixels === undefined)
         {
-            gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, format, gl.UNSIGNED_BYTE, null);
+            console.log("texture format " + format);
+            if(this.checkCompressedTexture(format)){
+                //gl.compressedTexImage2D( _gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data );
+                gl.compressedTexImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, null);
+            }else{
+                gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, format, gl.UNSIGNED_BYTE, null);
+            }
         }
         else
         {
@@ -1565,8 +1584,18 @@ var WebGLRenderer = new Class({
                 width = pixels.width;
                 height = pixels.height;
             }
-
-            gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, format, gl.UNSIGNED_BYTE, pixels);
+            console.log("texture format " + format);
+            if(this.checkCompressedTexture(format)){
+                //gl.compressedTexImage2D( _gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data );
+                gl.compressedTexImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, pixels.data);
+            }else{
+                
+                try {
+                    gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, format, gl.UNSIGNED_BYTE, pixels);
+                }catch(err) {
+                    return texture;
+                }
+            }
         }
 
         if (IsSizePowerOfTwo(width, height))
@@ -2935,6 +2964,19 @@ var WebGLRenderer = new Class({
     getMaxTextureSize: function ()
     {
         return this.config.maxTextureSize;
+    },
+
+    /**
+     * Returns true if it is compressed format.
+     *
+     * @method Phaser.Renderer.WebGL.WebGLRenderer#checkCompressedTexture
+     * @since 3.24.1
+     *
+     * @return {format} Texture formart.
+     */
+    checkCompressedTexture: function ( format )
+    {
+        return this.compressionArray[format] != undefined;
     },
 
     /**

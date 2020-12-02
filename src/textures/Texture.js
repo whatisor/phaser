@@ -40,7 +40,7 @@ var Texture = new Class({
 
     initialize:
 
-    function Texture (manager, key, source, width, height)
+    function Texture (manager, key, source, width, height, format)
     {
         if (!Array.isArray(source))
         {
@@ -129,7 +129,7 @@ var Texture = new Class({
         //  Load the Sources
         for (var i = 0; i < source.length; i++)
         {
-            this.source.push(new TextureSource(this, source[i], width, height));
+            this.source.push(new TextureSource(this, source[i], width, height,false, format));
         }
     },
 

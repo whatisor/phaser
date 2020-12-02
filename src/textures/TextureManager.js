@@ -378,6 +378,44 @@ var TextureManager = new Class({
         return texture;
     },
 
+    
+    /**
+     * Adds a new Texture to the Texture Manager created from the given Image element.
+     *
+     * @method Phaser.Textures.TextureManager#addImageExt
+     * @fires Phaser.Textures.Events#ADD
+     * @since 3.0.0
+     *
+     * @param {string} key - The unique string-based key of the Texture.
+     * @param {HTMLImageElement} source - The source Image element.
+     * @param {HTMLImageElement|HTMLCanvasElement} [dataSource] - An optional data Image element.
+     *
+     * @return {?Phaser.Textures.Texture} The Texture that was created, or `null` if the key is already in use.
+     */
+    addImageExt: function (key, source, format)
+    {
+        var texture = null;
+
+        if (this.checkKey(key))
+        {
+            let ktx = new Parser.ImageExt().parse(source,1);
+
+            //not support mimap
+            texture = this.create(key, ktx.mipmaps,ktx.width, ktx.height, ktx.format);
+            let sourceIndex = 0;
+            texture.add('__BASE', sourceIndex, 0, 0, ktx.width, ktx.height);
+
+            // if (dataSource)
+            // {
+            //     texture.setDataSource(dataSource);
+            // }
+
+            this.emit(Events.ADD, key, texture);
+        }
+        
+        return texture;
+    },
+
     /**
      * Takes a WebGL Texture and creates a Phaser Texture from it, which is added to the Texture Manager using the given key.
      * 
@@ -868,13 +906,13 @@ var TextureManager = new Class({
      *
      * @return {?Phaser.Textures.Texture} The Texture that was created, or `null` if the key is already in use.
      */
-    create: function (key, source, width, height)
+    create: function (key, source, width, height, format)
     {
         var texture = null;
 
         if (this.checkKey(key))
         {
-            texture = new Texture(this, key, source, width, height);
+            texture = new Texture(this, key, source, width, height, format);
 
             this.list[key] = texture;
         }

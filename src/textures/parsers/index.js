@@ -17,6 +17,7 @@ module.exports = {
     JSONHash: require('./JSONHash'),
     SpriteSheet: require('./SpriteSheet'),
     SpriteSheetFromAtlas: require('./SpriteSheetFromAtlas'),
-    UnityYAML: require('./UnityYAML')
+    UnityYAML: require('./UnityYAML'),
+    ImageExt:require('./KTXParser')
 
 };

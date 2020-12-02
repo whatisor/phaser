@@ -32,11 +32,13 @@ var TextureSource = new Class({
 
     initialize:
 
-    function TextureSource (texture, source, width, height, flipY)
+    function TextureSource (texture, source, width, height, flipY, format_)
     {
         if (flipY === undefined) { flipY = false; }
 
         var game = texture.manager.game;
+
+        this.format = format_;
 
         /**
          * The Texture this TextureSource belongs to.
@@ -230,7 +232,7 @@ var TextureSource = new Class({
                 }
                 else
                 {
-                    this.glTexture = this.renderer.createTextureFromSource(this.image, this.width, this.height, this.scaleMode);
+                    this.glTexture = this.renderer.createTextureFromSource(this.image, this.width, this.height, this.scaleMode, this.format);
                 }
             }
             else if (this.isRenderTexture)
