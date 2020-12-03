@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../build/phaser.js"></script> 
+</head>
+<body>
+    <script>
+    /////////////-----------//////////////
+    /*
+    best for desktop:
+    BC1(DXT1) - opaque textures
+    BC3(DXT5) - transparent textures with full alpha range
+
+    best for iOS:
+    PVR2, PVR4 - opaque textures or alpha
+
+    best for Android:
+    ETC1 - opaque textures
+    ASTC_4x4, ASTC8x8 - transparent textures with full alpha range
+    */
+    var config = {
+    type: Phaser.WEBGL,
+    width: 800,
+    height: 600,
+    parent: 'phaser-example',
+    scene: {
+        preload: preload,
+        create: create
+    },
+    pma: false
+};
+
+var game = new Phaser.Game(config);
+
+function preload (){
+    
+    //PNG - normal texture
+    this.load.image('image-png', 'textures/lensflare0_alpha.png');
+
+    //Compressed texture for each platform for optimized memory
+    //Response type is must
+    if(isMobile.Android()){
+        //astc
+        this.load.imageExt('compressed', 'textures/lensflare_ASTC8x8.ktx',
+        {responseType:"arraybuffer"});
+    }else if(isMobile.iOS()){
+        //pv
+        this.load.imageExt('compressed', 'textures/lensflare_PVR4bpp.ktx',
+        {responseType:"arraybuffer"});
+    }else{
+        //s3tc
+        this.load.imageExt('compressed', 'textures/lensflare_BC3.ktx',
+        {responseType:"arraybuffer"});
+    }
+}
+
+function create ()
+{
+   //this.add.image(256, 256, 'image');
+   imagepng = this.add.image(100, 100, 'image-png');
+   imagepng.scale = 0.3;
+
+   //Blender mode is must
+   image = this.add.image(256, 256, 'compressed').setBlendMode(Phaser.BlendModes.PREALPHA);
+   image.scale = 0.3;
+
+}
+var isMobile = {
+    Windows: function() {
+        return /IEMobile/i.test(navigator.userAgent);
+    },
+    Android: function() {
+        return /Android/i.test(navigator.userAgent);
+    },
+    BlackBerry: function() {
+        return /BlackBerry/i.test(navigator.userAgent);
+    },
+    iOS: function() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    },
+    any: function() {
+        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+    }
+};
+    </script>
+
+</body>
+</html>

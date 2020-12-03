@@ -328,6 +328,17 @@ module.exports = {
      * @const
      * @since 3.0.0
      */
-    XOR: 27
+    XOR: 27,
+
+    /**
+     * Pre-alpha blend mode. For Compressed texture only.
+     * 
+     * 
+     * @name Phaser.BlendModes.PREALPHA
+     * @type {integer}
+     * @const
+     * @since 3.0.0
+     */
+    PREALPHA: 28
 
 };

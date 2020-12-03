@@ -398,7 +398,7 @@ var TextureManager = new Class({
 
         if (this.checkKey(key))
         {
-            let ktx = new Parser.ImageExt().parse(source,1);
+            let ktx = new Parser.ImageExt().parse(source,0);
 
             //not support mimap
             texture = this.create(key, ktx.mipmaps,ktx.width, ktx.height, ktx.format);

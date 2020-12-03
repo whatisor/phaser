@@ -618,7 +618,7 @@ var WebGLRenderer = new Class({
         //  Set it back into the Game, so developers can access it from there too
         game.context = gl;
 
-        for (var i = 0; i <= 27; i++)
+        for (var i = 0; i <= 28; i++)
         {
             this.blendModes.push({ func: [ gl.ONE, gl.ONE_MINUS_SRC_ALPHA ], equation: gl.FUNC_ADD });
         }
@@ -634,6 +634,10 @@ var WebGLRenderer = new Class({
 
         //  ERASE
         this.blendModes[17] = { func: [ gl.ZERO, gl.ONE_MINUS_SRC_ALPHA ], equation: gl.FUNC_REVERSE_SUBTRACT };
+
+        //Compress texture with pre-alpha : PREALPHA
+        //gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        this.blendModes[28].func = [ gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
 
         this.glFormats[0] = gl.BYTE;
         this.glFormats[1] = gl.SHORT;
@@ -1570,7 +1574,9 @@ var WebGLRenderer = new Class({
         if (pixels === null || pixels === undefined)
         {
             console.log("texture format " + format);
+
             if(this.checkCompressedTexture(format)){
+                
                 //gl.compressedTexImage2D( _gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data );
                 gl.compressedTexImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, null);
             }else{
@@ -1586,11 +1592,16 @@ var WebGLRenderer = new Class({
             }
             console.log("texture format " + format);
             if(this.checkCompressedTexture(format)){
+                
+                //webgl does not support pre as false for compressed  texture
+                //gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+                //gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
                 //gl.compressedTexImage2D( _gl.TEXTURE_2D, i, glInternalFormat, mipmap.width, mipmap.height, 0, mipmap.data );
                 gl.compressedTexImage2D(gl.TEXTURE_2D, mipLevel, format, width, height, 0, pixels.data);
             }else{
                 
                 try {
+                    //gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
                     gl.texImage2D(gl.TEXTURE_2D, mipLevel, format, format, gl.UNSIGNED_BYTE, pixels);
                 }catch(err) {
                     return texture;
