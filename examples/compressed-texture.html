@@ -41,15 +41,15 @@ function preload (){
     //Response type is must
     if(isMobile.Android()){
         //astc
-        this.load.imageExt('compressed', 'textures/lensflare_ASTC8x8.ktx',
+        this.load.imageExt('compressed', 'textures/lensflare0_alpha.png.astc.ktx',
         {responseType:"arraybuffer"});
     }else if(isMobile.iOS()){
         //pv
-        this.load.imageExt('compressed', 'textures/lensflare_PVR4bpp.ktx',
+        this.load.imageExt('compressed', 'textures/lensflare0_alpha.png.pvrtc4BPPA.ktx',
         {responseType:"arraybuffer"});
     }else{
         //s3tc
-        this.load.imageExt('compressed', 'textures/lensflare_BC3.ktx',
+        this.load.imageExt('compressed', 'textures/lensflare0_alpha.png.dxt3.ktx',
         {responseType:"arraybuffer"});
     }
 }

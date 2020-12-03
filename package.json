@@ -80,6 +80,7 @@
     "eventemitter3": "^4.0.4",
     "exports-loader": "^1.1.0",
     "imports-loader": "^1.1.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "texture-compressor": "^1.0.2"
   }
 }
